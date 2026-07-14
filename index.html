@@ -43,6 +43,7 @@ header h1{margin:0;font-size:19px}header .sub{font-size:12px;opacity:.9;margin-t
 @media(min-width:600px){.grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}.nav{max-width:420px}}
 </style><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
 const FIREBASE_CONFIG={apiKey:"AIzaSyCQ3oADvR9OHNxWNoflKq5CwUtotyPwOHM",authDomain:"choko-study.firebaseapp.com",projectId:"choko-study",storageBucket:"choko-study.firebasestorage.app",messagingSenderId:"113743584687",appId:"1:113743584687:web:68c76a848f69018995635a"};
 const MASTER_ADMIN_EMAILS=["michio-sakae@aichi-hino.co.jp","fumiya-oobayashi@aichi-hino.co.jp","T_SOS@aichi-hino.co.jp","junya-yoshida@aichi-hino.co.jp"];
@@ -187,4 +188,52 @@ function mypage(){
  app.innerHTML=h;window.scrollTo(0,0)}
 
 home();
+</script>
+<script>
+(function(){
+  var db2 = firebase.firestore();
+  var _fbUser = null;
+  auth.onAuthStateChanged(function(u){ _fbUser = u; });
+  window.addEventListener('load', function(){
+    // markMiss をラップ：間違いを partsWrongAnswers/partsWrongHistory に保存
+    var _origMiss = window.markMiss;
+    window.markMiss = function(q, ok){
+      _origMiss(q, ok);
+      if(!_fbUser) return;
+      var uid = _fbUser.uid;
+      var src = (window.S && S.label) ? S.label : 'parts';
+      var qNo = window.S ? (S.idx + 1) : 0;
+      var stem = (q.s || '').substring(0, 200);
+      var key = (src + '_q' + qNo).replace(/[^\w\u3040-\u9FFF]/g, '_').substring(0, 80);
+      var ts = firebase.firestore.FieldValue.serverTimestamp();
+      if(!ok){
+        db2.collection('users').doc(uid).collection('partsWrongAnswers').doc(key).set({
+          stem:stem, source:src, qNo:qNo, label:'Q'+qNo, timestamp:ts,
+          url: location.origin + location.pathname
+        },{merge:true}).catch(function(){});
+        db2.collection('users').doc(uid).collection('partsWrongHistory').doc(key).set({
+          stem:stem, source:src, qNo:qNo, label:'Q'+qNo, firstWrong:ts,
+          url: location.origin + location.pathname
+        },{merge:true}).catch(function(){});
+      } else {
+        db2.collection('users').doc(uid).collection('partsWrongAnswers').doc(key).delete().catch(function(){});
+      }
+    };
+    // finish をラップ：試験終了時に partsStats を保存
+    var _origFinish = window.finish;
+    window.finish = function(){
+      _origFinish();
+      if(!_fbUser || !window.S || !S.list || !S.list.length) return;
+      var uid = _fbUser.uid;
+      var src = S.label || 'parts';
+      db2.collection('users').doc(uid).collection('partsStats').doc(
+        src.replace(/[^\w\u3040-\u9FFF]/g,'_').substring(0,80)
+      ).set({
+        source:src, lastCorrect:S.score, lastTotal:S.list.length,
+        lastDate:firebase.firestore.FieldValue.serverTimestamp(),
+        totalAttempts:firebase.firestore.FieldValue.increment(1)
+      },{merge:true}).catch(function(){});
+    };
+  });
+})();
 </script></body></html>
