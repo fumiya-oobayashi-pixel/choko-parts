@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ちょこパーツ ログイン</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:linear-gradient(135deg,#1e3a5f 0%,#2d5a8e 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Hiragino Sans','Meiryo',sans-serif}
+.card{background:white;border-radius:20px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.logo{text-align:center;margin-bottom:28px}
+.logo h1{font-size:1.8rem;font-weight:900;color:#1e3a5f}
+.logo p{color:#64748b;font-size:.85rem;margin-top:4px}
+label{display:block;font-size:.8rem;font-weight:700;color:#64748b;margin-bottom:4px;margin-top:16px}
+input{width:100%;padding:12px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:1rem;outline:none;transition:.15s;font-family:inherit}
+input:focus{border-color:#2563eb;background:#eff6ff}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#1e3a5f,#2d5a8e);color:white;font-size:1rem;font-weight:700;cursor:pointer;margin-top:24px;font-family:inherit;transition:.15s}
+.btn:hover{opacity:.9;transform:translateY(-1px)}
+.btn-guest{background:linear-gradient(135deg,#059669,#10b981)}
+.error{background:#fee2e2;border:1px solid #fca5a5;color:#dc2626;padding:10px 12px;border-radius:8px;font-size:.85rem;margin-top:12px;display:none}
+.loading{text-align:center;color:#64748b;padding:10px;display:none}
+.divider{display:flex;align-items:center;gap:10px;margin:24px 0 0;color:#94a3b8;font-size:.8rem}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#e2e8f0}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <h1>🔩 ちょこパーツ</h1>
+    <p>愛知日野自動車　部品知識 問題集</p>
+  </div>
+  <div>
+    <label>メールアドレス</label>
+    <input type="email" id="email" placeholder="your@email.com" autocomplete="email">
+    <label>パスワード</label>
+    <input type="password" id="password" placeholder="パスワード" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
+    <div class="error" id="err"></div>
+    <div class="loading" id="loading">ログイン中...</div>
+    <button class="btn" onclick="login()">ログイン</button>
+  </div>
+
+  <div class="divider">または</div>
+
+  <div style="margin-top:0">
+    <label>合言葉でアクセス（IDなしの方）</label>
+    <input type="password" id="guestpw" placeholder="合言葉を入力" autocomplete="off" onkeydown="if(event.key==='Enter')guestLogin()">
+    <div class="error" id="guest-err"></div>
+    <div class="loading" id="guest-loading">アクセス中...</div>
+    <button class="btn btn-guest" onclick="guestLogin()" style="margin-top:12px">🔑 合言葉でログイン</button>
+  </div>
+</div>
+
+<script src="firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+const GUEST_PASSCODE = 'Truck2026';
+
+const app = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+window._auth = auth;
+
+onAuthStateChanged(auth, user => {
+  if (user) { location.href = 'index.html'; }
+});
+
+window.login = async function() {
+  const email = document.getElementById('email').value.trim();
+  const pw = document.getElementById('password').value;
+  const errEl = document.getElementById('err');
+  const loadEl = document.getElementById('loading');
+  errEl.style.display = 'none';
+  loadEl.style.display = 'block';
+  try {
+    await signInWithEmailAndPassword(auth, email, pw);
+  } catch(e) {
+    loadEl.style.display = 'none';
+    let msg = 'ログインに失敗しました';
+    if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') msg = 'メールアドレスまたはパスワードが違います';
+    else if (e.code === 'auth/user-not-found') msg = 'ユーザーが見つかりません';
+    else if (e.code === 'auth/too-many-requests') msg = 'ログイン試行が多すぎます。しばらく待ってください';
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+  }
+};
+
+window.guestLogin = async function() {
+  const pw = document.getElementById('guestpw').value;
+  const errEl = document.getElementById('guest-err');
+  const loadEl = document.getElementById('guest-loading');
+  errEl.style.display = 'none';
+  if (pw !== GUEST_PASSCODE) {
+    errEl.textContent = '合言葉が違います';
+    errEl.style.display = 'block';
+    return;
+  }
+  loadEl.style.display = 'block';
+  try {
+    await signInAnonymously(auth);
+  } catch(e) {
+    loadEl.style.display = 'none';
+    errEl.textContent = 'アクセスに失敗しました。しばらく待ってください';
+    errEl.style.display = 'block';
+  }
+};
+</script>
+</body>
+</html>
