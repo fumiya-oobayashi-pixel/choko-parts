@@ -272,3 +272,19 @@ Object.keys(sub).forEach(function(k){if(sub[k]>0&&!cc[k])cc[k]=1});
 localStorage.setItem(CKEY,JSON.stringify(cc));localStorage.setItem("choko_parts_mig1","1");}catch(e){}})();
 home();
 </script></body></html>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+(function(){
+var cfg={apiKey:"AIzaSyCQ3oADvR9OHNxWNoflKq5CwUtotyPwOHM",authDomain:"choko-study.firebaseapp.com",projectId:"choko-study"};
+firebase.initializeApp(cfg);
+var auth2=firebase.auth(),db2=firebase.firestore(),_u=null;
+auth2.onAuthStateChanged(function(u){_u=u;if(!u)location.href='login.html';});
+window.addEventListener('load',function(){
+var _om=window.markMiss,_of=window.finish;
+if(_om)window.markMiss=function(q,ok){_om(q,ok);if(!_u)return;var uid=_u.uid,src=(window.S&&S.label)?S.label:'parts',qNo=window.S?(S.idx+1):0,stem=(q.s||'').substring(0,200),key=(src+'_q'+qNo).replace(/[^\w\u3040-\u9FFF]/g,'_').substring(0,80),ts=firebase.firestore.FieldValue.serverTimestamp();if(!ok){db2.collection('users').doc(uid).collection('partsWrongAnswers').doc(key).set({stem:stem,source:src,qNo:qNo,label:'Q'+qNo,timestamp:ts,url:location.origin+location.pathname},{merge:true}).catch(function(){});db2.collection('users').doc(uid).collection('partsWrongHistory').doc(key).set({stem:stem,source:src,qNo:qNo,label:'Q'+qNo,firstWrong:ts,url:location.origin+location.pathname},{merge:true}).catch(function(){});}else{db2.collection('users').doc(uid).collection('partsWrongAnswers').doc(key).delete().catch(function(){});}};
+if(_of)window.finish=function(){_of();if(!_u||!window.S||!S.list||!S.list.length)return;var uid=_u.uid,src=S.label||'parts';db2.collection('users').doc(uid).collection('partsStats').doc(src.replace(/[^\w\u3040-\u9FFF]/g,'_').substring(0,80)).set({source:src,lastCorrect:S.score,lastTotal:S.list.length,lastDate:firebase.firestore.FieldValue.serverTimestamp(),totalAttempts:firebase.firestore.FieldValue.increment(1)},{merge:true}).catch(function(){});};
+});
+})();
+         </script>
