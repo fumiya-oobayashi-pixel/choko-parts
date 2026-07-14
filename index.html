@@ -44,8 +44,10 @@ header h1{margin:0;font-size:19px}header .sub{font-size:12px;opacity:.9;margin-t
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="firebase-config.js?v=2"></script>
 <script>
+const FIREBASE_CONFIG={apiKey:"AIzaSyCQ3oADvR9OHNxWNoflKq5CwUtotyPwOHM",authDomain:"choko-study.firebaseapp.com",projectId:"choko-study",storageBucket:"choko-study.firebasestorage.app",messagingSenderId:"113743584687",appId:"1:113743584687:web:68c76a848f69018995635a"};
+const MASTER_ADMIN_EMAILS=["michio-sakae@aichi-hino.co.jp","fumiya-oobayashi@aichi-hino.co.jp","T_SOS@aichi-hino.co.jp","junya-yoshida@aichi-hino.co.jp"];
+function isAdmin(e){return MASTER_ADMIN_EMAILS.includes(e);}
 firebase.initializeApp(FIREBASE_CONFIG);
 var auth=firebase.auth();
 auth.onAuthStateChanged(function(u){if(!u){location.href='login.html';}});
