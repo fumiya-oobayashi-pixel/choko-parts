@@ -99,7 +99,7 @@ main{max-width:900px;margin:0 auto;padding:16px}
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, collection, getDocs, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const app = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(app);
@@ -111,6 +111,9 @@ onAuthStateChanged(auth, async user => {
   document.getElementById('loading').style.display = 'none';
   if (!user) { document.getElementById('no-login').style.display = 'block'; return; }
   document.getElementById('content').style.display = 'block';
+
+  // users親ドキュメントを作成（admin.htmlのユーザー一覧に表示するため）
+  setDoc(doc(db, 'users', user.uid), {email: user.email, displayName: user.displayName || user.email.split('@')[0]}, {merge: true}).catch(() => {});
 
   // ちょこパーツ専用コレクション名を使用
   const [ws, hs, ss, cs] = await Promise.all([
