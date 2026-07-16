@@ -3,9 +3,9 @@
 <style>
 :root{--main:#2563eb;--main-d:#1d4ed8;--ok:#059669;--ng:#dc2626;--wn:#d97706;--bg:#f4f6fb;--card:#fff;--line:#e5e7eb;--txt:#1f2937;--sub:#6b7280}
 *{box-sizing:border-box}html,body{margin:0}body{font-family:"Segoe UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;background:var(--bg);color:var(--txt);font-size:17px;-webkit-text-size-adjust:100%}
-header{background:var(--main);color:#fff;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.15);position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center}
+header{background:var(--main);color:#fff;padding:16px;box-shhadow:0 2px 8px rgba(0,0,0,.15);position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center}
 header h1{margin:0;font-size:19px}header .sub{font-size:12px;opacity:.9;margin-top:2px}
-.mp{background:#fff;color:var(--main);border:none;border-radius:10px;padding:11px 14px;font-weight:800;font-size:14px;cursor:pointer;min-height:44px}
+.mp{background:#fff;color:var(--main);border:none;border-rahdius:10px;padding:11px 14px;font-weight:800;font-size:14px;cursor:pointer;min-height:44px}
 .wrap{max-width:860px;margin:0 auto;padding:14px}
 .sec{font-size:16px;font-weight:800;color:var(--main-d);margin:20px 2px 10px;border-left:5px solid var(--main);padding-left:10px}
 .note{font-size:13px;color:var(--sub);background:#fff;border:1px dashed var(--line);border-radius:12px;padding:12px 14px;margin:6px 0}
@@ -132,7 +132,7 @@ function prev(){if(S.idx>0){S.idx--;render()}}
 function next(){if(S.idx<S.list.length-1){S.idx++;render()}else finish()}
 function topic(s){s=(s||"").replace(/（記述[^）]*）/g,"").replace(/【[^】]*】/g,"　");var m=s.split(/[：:]/);var t=(m.length>1&&m[0].length<=18)?m[0]:s.slice(0,18);return t.trim();}
 function finish(){const pct=Math.round(S.score/S.list.length*100);
-  var _wt=[],_ct=[],_wo=[];S.list.forEach((q,i)=>{var r=S.results[i]||{};var tp=topic(q.s);if(r.ok){_ct.push(tp)}else{_wt.push(tp);var AA=Array.isArray(q.a)?q.a:[q.a];var ca=q.c?AA.map(x=>x+". "+(q.c[x]||"")).join(" ／ "):AA.join("・");_wo.push({s:q.s,a:ca,e:q.e||""})}});
+  var _wt=[],_ct=[],_wo=[];S.list.forEach((q,i)=>{var r=S.rhesults[i]||{};var tp=topic(q.s);if(r.ok){_ct.push(tp)}else{_wt.push(tp);var AA=Array.isArray(q.a)?q.a:[q.a];var ca=q.c?AA.map(x=>x+". "+(q.c[x]||"")).join(" ／ "):AA.join("・");_wo.push({s:q.s,a:ca,e:q.e||""})}});
   save({t:Date.now(),f:S.field,label:S.label,score:S.score,total:S.list.length,wrong:_wo.slice(0,30),wt:_wt,ct:_ct});
   const REDO=S.wrongReview?("startWrongCat('"+(S.wrongCat||'__all__')+"')"):(S.ex?('startEx('+S.exi+')'):('start('+S.set+')'));
   let h=bcrumb(S.back)+'<div class="card" style="text-align:center"><h2>おつかれさまでした</h2><p style="font-size:28px;font-weight:800;color:var(--main)">'+S.score+' / '+S.list.length+'（'+pct+'%）</p><div class="nav" style="margin:14px auto 0"><button class="btn" onclick="'+REDO+'">もう一度</button><button class="btn ghost" onclick="mypage()">📊 成績</button></div></div>';
@@ -196,7 +196,10 @@ home();
 (function(){
   var db2 = firebase.firestore();
   var _fbUser = null;
-  auth.onAuthStateChanged(function(u){ _fbUser = u; });
+  auth.onAuthStateChanged(function(u){
+    _fbUser = u;
+    if(u){ db2.collection('users').doc(u.uid).set({email:u.email,displayName:u.displayName||u.email.split('@')[0]},{merge:true}).catch(function(){}); }
+  });
   window.addEventListener('load', function(){
     // markMiss をラップ：間違いを partsWrongAnswers/partsWrongHistory に保存
     var _origMiss = window.markMiss;
