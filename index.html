@@ -270,7 +270,11 @@ function mypage(){
 
 (function(){try{if(!localStorage.getItem("choko_parts_mig2")){localStorage.removeItem(SKEY);localStorage.removeItem(MKEY);localStorage.setItem("choko_parts_mig2","1")}}catch(e){}})();
 (function(){try{if(localStorage.getItem("choko_parts_mig1"))return;var seen=sget(),cc=cget(),sub={};
-Object.keys<script src="./firebase-config.js"></script>
+Object.keys(QIDX).forEach(function(st){var q=QIDX[st];var m=(q._cat||"").match(/(\d+級)/);var k=m?(q._cat):(q._sub||q._cat);if(!k)return;sub[k]=sub[k]||0;if(seen[st]&&seen[st].ok)sub[k]++;});
+Object.keys(sub).forEach(function(k){if(sub[k]>0&&!cc[k])cc[k]=1});
+localStorage.setItem(CKEY,JSON.stringify(cc));localStorage.setItem("choko_parts_mig1","1");}catch(e){}})();
+home();
+</script><script src="./firebase-config.js"></script>
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import{getAuth,onAuthStateChanged,signOut}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
@@ -282,14 +286,8 @@ try{
     const badge=document.getElementById('choko-user');
     const nameEl=document.getElementById('choko-user-name');
     const btn=document.getElementById('choko-logout');
-    if(user){
-      if(nameEl)nameEl.textContent=user.email.split('@')[0];
-      if(badge)badge.style.display='inline-block';
-      if(btn)btn.style.display='inline-block';
-    }else{
-      if(badge)badge.style.display='none';
-      if(btn)btn.style.display='none';
-    }
+    if(user){if(nameEl)nameEl.textContent=user.email.split('@')[0];if(badge)badge.style.display='inline-block';if(btn)btn.style.display='inline-block';}
+    else{if(badge)badge.style.display='none';if(btn)btn.style.display='none';}
   });
 }catch(e){}
 </script>
